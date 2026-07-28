@@ -13,6 +13,7 @@ const cors = require('cors');
 const PORT = 1621;
 
 
+
 // If on FLIP or classwork, use cors() middleware to allow cross-origin requests from the frontend with your port number:
 // EX (local): http://localhost:5173
 // EX (FLIP/classwork) http://classwork.engr.oregonstate.edu:5173
@@ -20,8 +21,15 @@ app.use(cors({ credentials: true, origin: "*" }));
 app.use(express.json()); // this is needed for post requests, good thing to know
             
 // Route handler 
-app.get('/', (req, res) => {
-    res.send({ message: "Hello, World!" });
+app.get('/authors', async (req, res) => {
+    try{
+        const query1 = 'SELECT * FROM Authors;'        
+        const [rows] = await db.query(query1);
+        res.status(200).json(rows)
+    }catch(error){
+        console.error("Error fetching Authors.");
+        res.status(500).send("An error occurred while fetching Authors.");
+    }
 });
 
 // Tell express what port to listen on 

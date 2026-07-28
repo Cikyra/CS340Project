@@ -38,7 +38,7 @@ export default function App() {
           <Routes>
             <Route path="/" element={<HomePage />} />
 
-            <Route path="/authors" element={<RetrieveAuthorsPage setAuthorToEdit={setAuthorToEdit}/>} />
+            <Route path="/authors" element={<RetrieveAuthorsPage />} />
 
             <Route path="/books" element={<RetrieveBooksPage setBookToEdit={setBookToEdit} />} />
             <Route path="/books/create" element={<CreateBookPage />} />
@@ -48,7 +48,7 @@ export default function App() {
             <Route path="/loans/create" element={<CreateLoanPage />} />
             <Route path="/loans/edit/:_id" element={<EditLoanPage loanToEdit={loanToEdit} />} />
 
-            <Route path="/patrons" element={<RetrievePatronsPage setPatronToEdit={setPatronToEdit} />} />
+            <Route path="/patrons" element={<RetrievePatronsPage />} />
             <Route path="/loandetails" element={<RetrieveLoanDetailsPage />} />
             <Route path="/bookauthors" element={<RetrieveBookAuthorsPage />} />
           </Routes>
