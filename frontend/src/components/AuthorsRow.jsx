@@ -1,7 +1,7 @@
 export default function AuthorsRow({ author }) {
-  const authorId = author?.id_author ?? author?.authorID ?? author?.id ?? author?._id ?? 'N/A'
-  const firstName = author?.fname ?? author?.first_name ?? author?.firstName ?? author?.FName ?? 'N/A'
-  const lastName = author?.lname ?? author?.last_name ?? author?.lastName ?? author?.LName ?? 'N/A'
+  const authorId = author?.id_author 
+  const firstName = author?.fname
+  const lastName = author?.lname
 
   return (
     <tr>

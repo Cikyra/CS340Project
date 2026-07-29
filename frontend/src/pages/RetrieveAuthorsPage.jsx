@@ -30,7 +30,7 @@ export default function RetrieveAuthorsPage() {
   return (
     <section className="card">
       <h2>Authors</h2>
-      <p>All recorded books authors are below.</p>
+      <p>All recorded authors are below.</p>
       <AuthorsTable authors={authors} />
     </section>
   )
