@@ -32,10 +32,10 @@ export default function App() {
 
             <Route path="/loans" element={<RetrieveLoansPage setLoanToEdit={setLoanToEdit} />} />
             <Route path="/loans/create" element={<CreateLoanPage />} />
-            <Route path="/loans/edit/:_id" element={<EditLoanPage loanToEdit={loanToEdit} />} />
+            <Route path="/loandetails" element={<RetrieveLoanDetailsPage setLoanToEdit={setLoanToEdit} />} />
+            <Route path="/loandetails/edit/:_id" element={<EditLoanPage loanToEdit={loanToEdit} />} />
 
             <Route path="/patrons" element={<RetrievePatronsPage />} />
-            <Route path="/loandetails" element={<RetrieveLoanDetailsPage />} />
             <Route path="/bookauthors" element={<RetrieveBookAuthorsPage />} />
             <Route path="/authors" element={<RetrieveAuthorsPage />} />
             <Route path="/books" element={<RetrieveBooksPage />} />

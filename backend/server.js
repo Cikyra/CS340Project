@@ -8,7 +8,7 @@ const db = require('./db-connector');
 const express = require('express');
 const app = express();
 const cors = require('cors');
-const PORT = 1621;
+const PORT = 4578;
 
 app.use(cors({ credentials: true, origin: "*" }));
 app.use(express.json()); // this is needed for post requests, good thing to know

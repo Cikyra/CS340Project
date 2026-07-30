@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-"scripts": {
+  "scripts": {
     "development": "vite",
     "build": "vite build",
     "production": "npx forever start reactServer.cjs",
@@ -17,7 +17,10 @@
     "path": "^0.12.7",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-router-dom": "^6.30.4"
+    "react-hook-form": "^7.83.0",
+    "react-icons": "^4.11.0",
+    "react-router-dom": "^6.30.4",
+    "react-select": "^5.10.2"
   },
   "devDependencies": {
     "@types/react": "^18.0.26",

@@ -1,3 +1,3 @@
 export default function RetrievePatronsPage({ setPatronToEdit }) {
-  return <div>Retrieve Patrons Page</div>;
+  return <div>Patrons Page</div>;
 }
