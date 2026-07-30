@@ -4,8 +4,8 @@ export default function LoanDetailsRow({ loanDetail, onEdit, onDelete }) {
   const loanDetailsId = loanDetail?.id_loan_details
   const loanId = loanDetail?.id_loan
   const patronId = loanDetail?.id_patron
-  const patronLastName = loanDetail?.lname
-  const patronFirstName = loanDetail?.fname
+  const patronLastName = loanDetail?.patron_lname
+  const patronFirstName = loanDetail?.patron_fname
   const bookTitle = loanDetail?.title
 
   const checkoutDate = loanDetail.checkout_date?.split('T')[0] ?? ''

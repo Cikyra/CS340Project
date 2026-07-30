@@ -1,9 +1,9 @@
 export default function BookAuthorsRow({ bookAuthor }) {
   const bookAuthorId = bookAuthor?.id_book_has_author
-  const bookTitle = bookAuthor?.title
+  const bookTitle = bookAuthor?.book_title
   const isbn = bookAuthor?.isbn
-  const authorLastName = bookAuthor?.lname
-  const authorFirstName = bookAuthor?.fname
+  const authorLastName = bookAuthor?.author_lname
+  const authorFirstName = bookAuthor?.author_fname
 
 
   return (

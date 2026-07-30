@@ -3,8 +3,8 @@ import { FaEdit, FaTrash } from 'react-icons/fa'
 export default function LoansRow({ loan, onDelete }) {
   const loanId = loan?.id_loan
   const patronId = loan?.id_patron
-  const patronLastName = loan?.fname
-  const patronFirstName = loan?.lname
+  const patronLastName = loan?.patron_fname
+  const patronFirstName = loan?.patron_lname
   const checkoutDate = loan?.checkout_date
 
 
