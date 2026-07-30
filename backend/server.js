@@ -12,8 +12,13 @@ const PORT = 1621;
 
 app.use(cors({ credentials: true, origin: "*" }));
 app.use(express.json()); // this is needed for post requests, good thing to know
+
+
+// -----------------------------------------------------------------------------------
+//  All Get Requests
+// -----------------------------------------------------------------------------------
             
-// Route handler 
+// Route handler: Get all Authors
 app.get('/authors', async (req, res) => {
     try{
         const query1 = 'SELECT * FROM Authors;'        
@@ -25,16 +30,225 @@ app.get('/authors', async (req, res) => {
     }
 });
 
+// Route handler: Get all Books
 app.get('/books', async (req, res) => {
     try{
         const query1 = 'SELECT * FROM Books;'        
         const [rows] = await db.query(query1);
         res.status(200).json(rows)
     }catch(error){
-        console.error("Error fetching books.");
+        console.error("Error fetching Books.");
         res.status(500).send("An error occurred while fetching books.");
     }
 });
+
+
+// Route handler: Get all Patrons
+app.get('/patrons', async (req, res) => {
+    try{
+        const query1 = 'SELECT * FROM Patrons;'
+        const [rows] = await db.query(query1);
+        res.status(200).json(rows)
+    }catch(error){
+        console.error("Error fetching Patrons.");
+        res.status(500).send("An error occurred while fetching patrons.");
+    }
+});
+
+// Route handler: Get all Loans
+app.get('/loans', async (req, res) => {
+    try{
+        const query1 = `SELECT 
+                            Loans.id_loan, 
+                            Patrons.id_patron, 
+                            Patrons.lname AS patron_lname, 
+                            Patrons.fname AS patron_fname, 
+                            Loans.checkout_date
+                        FROM Loans
+                        INNER JOIN Patrons ON Loans.id_patron = Patrons.id_patron
+                        ORDER BY Loans.id_loan ASC;`
+        const [rows] = await db.query(query1);
+        res.status(200).json(rows)
+    }catch(error){
+        console.error("Error fetching Loans.");
+        res.status(500).send("An error occurred while fetching loans.");
+    }
+});
+
+// Route handler: Get all Loan_Details
+app.get('/loandetails', async (req, res) => {
+    try{
+        const query1 = `SELECT 
+                            Loan_Details.id_loan_details, 
+                            Loans.id_loan, 
+                            Patrons.id_patron, 
+                            Patrons.lname AS patron_lname, 
+                            Patrons.fname AS patron_fname, 
+                            Books.title AS book_title, 
+                            Loans.checkout_date, 
+                            Loan_Details.due_date, 
+                            Loan_Details.date_returned
+                        FROM Loan_Details
+                        INNER JOIN Books ON Loan_Details.id_book = Books.id_book
+                        INNER JOIN Loans ON Loan_Details.id_loan = Loans.id_loan
+                        INNER JOIN Patrons ON Loans.id_patron = Patrons.id_patron
+                        ORDER BY Loan_Details.due_date ASC;`
+        const [rows] = await db.query(query1);
+        res.status(200).json(rows)
+    }catch(error){
+        console.error("Error fetching Loan_Details.");
+        res.status(500).send("An error occurred while fetching loan details.")
+    }
+});
+
+// Route handler: Get all Books_has_Authors 
+app.get('/bookauthors', async(req,res) => {
+    try{
+        const query1 = `SELECT 
+                            Books_has_Authors.id_book_has_author, 
+                            Books.title AS book_title, 
+                            Books.isbn, 
+                            Authors.lname AS author_lname, 
+                            Authors.fname AS author_fname
+                        FROM Books_has_Authors
+                        INNER JOIN Books ON Books_has_Authors.id_book = Books.id_book
+                        INNER JOIN Authors ON Books_has_Authors.id_author = Authors.id_author
+                        ORDER BY Books_has_Authors.id_book_has_author;`
+        const [rows] = await db.query(query1);
+        res.status(200).json(rows)
+    }catch(error){
+        console.error("Error fetching Books_has_Authors.");
+        res.status(500).send("An error occurred while fetching book-author details.")
+    }
+});
+
+
+// -----------------------------------------------------------------------------------
+//  All Post Requests
+// -----------------------------------------------------------------------------------
+
+
+function validateDate(date) {
+    return /^\d{4}-\d{2}-\d{2}$/.test(date)
+}
+
+function validateLoan(properties) {
+    const {id_patron, checkout_date, books} = properties
+    if (!id_patron || !Number.isInteger(id_patron)) {return false}
+    if (!checkout_date || !validateDate(checkout_date)) {return false}
+    if (!Array.isArray(books) || books.length === 0) {return false}
+    
+
+    for (let i=0; i < books.length; i++) {
+        if (!books[i]) {return false}
+        if (!books[i].id_book || !books[i].due_date) {return false}
+        if (!Number.isInteger(books[i].id_book)) {return false}
+        if (!validateDate(books[i].due_date)) {return false}
+    }
+    return true
+}
+
+app.post('/loans/create', async(req,res) => {
+    if (!validateLoan(req.body)) {
+        return res.status(400).send("Improperly formatted request.")
+    }
+    const loanEvent = req.body
+    const {id_patron, checkout_date, books} = loanEvent
+    
+    // createLoanEvent
+    try{
+        const query1 = `INSERT INTO Loans (id_patron, checkout_date) 
+                        VALUES (?, ?)`
+        const [result] = await db.query(query1, [id_patron, checkout_date]);
+        //console.log(result)
+        // save the newly created loan_id
+        const id_loan = result.insertId
+
+        // create new Loan_Details row(s)
+        for (const book of books) {
+            
+            const id_book = book.id_book
+            const due_date = book.due_date
+            const date_returned = null
+            
+            const query2 = `INSERT INTO Loan_Details (id_loan, id_book, due_date, date_returned)
+                            VALUES (?, ?, ?, ?)`           
+            const [result2] = await db.query(query2, [id_loan, id_book, due_date, date_returned ])}
+            
+        res.status(201).send("Loans and Loan_Details successfully created")
+        }catch(error){
+        res.status(500).send("An error occurred while creating new Loan event and Loan_Details.")
+    }})
+
+
+// -----------------------------------------------------------------------------------
+//  All Put Requests
+// -----------------------------------------------------------------------------------
+
+function validateLoanDetails(properties, id_loan_details) {
+    const {due_date, date_returned} = properties
+    if (!validateDate(due_date)) {return false}
+    if (date_returned !== null && !validateDate(date_returned)) {return false}
+    if (!Number.isInteger(id_loan_details)) {return false}
+    return true
+}
+
+app.put('/loandetails/:_id', async(req,res) => {
+        const id_loan_details = Number(req.params._id)
+
+        if (!validateLoanDetails(req.body, id_loan_details)) {
+            return res.status(400).send("Improperly formatted request.")
+        }
+
+        const loanUpdate = req.body
+        const{due_date, date_returned} = loanUpdate
+        
+        // update Loan_Details
+        try{
+            const query1 = `UPDATE Loan_Details
+                            SET due_date = ?, date_returned = ?
+                            WHERE id_loan_details = ?`
+            const [result] = await db.query(query1, [due_date, date_returned, id_loan_details])
+            res.status(200).send("Loan_Details successfully updated.")
+        }catch(error){
+            res.status(500).send("An error occurred while updating Loan_Details.")
+        }})
+
+
+// -----------------------------------------------------------------------------------
+//  All DELETE Requests
+// -----------------------------------------------------------------------------------
+
+app.delete('/loandetails/:_id', async(req,res) => {
+    const id_loan_details = Number(req.params._id)
+    if (!Number.isInteger(id_loan_details)) {
+        return res.status(400).send("Improperly formatted request.")}
+
+    try{
+        const query1 = `DELETE FROM Loan_Details
+                        WHERE id_loan_details = ?`
+        const [result] = await db.query(query1, [id_loan_details])
+        res.status(204).send()
+    }catch(error){
+        res.status(500).send("An error occurred while deleting this record.")
+    }})
+
+    app.delete('/loans/:_id', async(req,res) => {
+        const id_loan = Number(req.params._id)
+        if (!Number.isInteger(id_loan)) {
+            return res.status(400).send("Improperly formatted request")}
+
+        try{
+            const query1 = `DELETE FROM Loans
+                            WHERE id_loan = ?`
+            const [rows] = await db.query(query1, [id_loan])
+            res.status(204).send()
+        }catch(error){
+            res.status(500).send("An error occurred while deleting this record.")
+        }
+    })
+
+
 
 // Tell express what port to listen on 
 app.listen(PORT, function () {
