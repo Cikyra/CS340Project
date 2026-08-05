@@ -42,7 +42,7 @@ export default function RetrieveLoanDetailPage({ setLoanToEdit }) {
 
   const onEdit = async loanToEdit => {
     setLoanToEdit(loanToEdit);
-    navigate(`/edit/${loanToEdit.id_loan_details}`);
+    navigate(`/loandetails/edit/${loanToEdit.id_loan_details}`);
   };
 
   return (
