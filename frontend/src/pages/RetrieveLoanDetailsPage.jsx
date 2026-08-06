@@ -29,9 +29,9 @@ export default function RetrieveLoanDetailPage({ setLoanToEdit }) {
   }, [])
 
   const onDelete = async (id) => {
-    const response = await fetch(`/loanDetails/${id}`, { method: 'DELETE' });
+    const response = await fetch(`${backendURL}/loandetails/${id}`, { method: 'DELETE' });
     if (response.status === 204) {
-      const getResponse = await fetch('/loanDetails');
+      const getResponse = await fetch(`${backendURL}/loandetails`);
       const loanDetails = await getResponse.json();
       setLoanDetails(loanDetails);
     }

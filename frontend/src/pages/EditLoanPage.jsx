@@ -18,6 +18,7 @@ const backendURL = import.meta.env.VITE_BACKEND_URL
 
 const EditLoanPage = ({ loanToEdit }) => {
   const { _id } = useParams();
+  const navigate = useNavigate();
 
   // State variables for form inputs
   const [idLoanDetailsUpdate, setIdLoanDetailsUpdate] = useState(_id ?? '');
@@ -38,15 +39,26 @@ const EditLoanPage = ({ loanToEdit }) => {
           fetch(`${backendURL}/loandetails`),
           fetch(`${backendURL}/loans`)
         ]);
-        setLoanDetails(loanDetailsResponse.ok ? await loanDetailsResponse.json() : []);
+        const loanDetailsData = loanDetailsResponse.ok ? await loanDetailsResponse.json() : [];
+        setLoanDetails(loanDetailsData);
         setLoans(loansResponse.ok ? await loansResponse.json() : []);
+
+        // loanToEdit prop is lost on direct navigation/refresh, so fall back to the fetched record for this _id
+        const currentLoanDetail = loanDetailsData.find(
+          (loanDetail) => String(loanDetail.id_loan_details) === String(_id)
+        );
+        if (currentLoanDetail) {
+          setIdLoanDetailsUpdate(String(currentLoanDetail.id_loan_details));
+          setDueDate(currentLoanDetail.due_date?.split('T')[0] ?? '');
+          setDateReturned(currentLoanDetail.date_returned?.split('T')[0] ?? '');
+        }
       } catch (error) {
         console.error('Error fetching dropdown options:', error);
       }
     };
 
     loadDropdownOptions();
-  }, []);
+  }, [_id]);
 
   // ---------------------------------------------------------------------------
   // UPDATE QUERIES
@@ -66,6 +78,7 @@ const EditLoanPage = ({ loanToEdit }) => {
       });
       if (response.ok) {
         alert('Loan details updated successfully!');
+        navigate('/loandetails');
       } else {
         alert('Failed to update loan details.');
       }
@@ -88,6 +101,7 @@ const EditLoanPage = ({ loanToEdit }) => {
       });
       if (response.ok) {
         alert('Book removed from loan successfully!');
+        navigate('/loandetails');
       } else {
         alert('Failed to delete book from loan.');
       }
@@ -107,6 +121,7 @@ const EditLoanPage = ({ loanToEdit }) => {
       });
       if (response.ok) {
         alert('Loan deleted successfully!');
+        navigate('/loandetails');
       } else {
         alert('Failed to delete loan.');
       }

@@ -5,19 +5,43 @@ URL: https://canvas.oregonstate.edu/courses/2051721/pages/exploration-web-applic
 */
 
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Select from 'react-select';
 
+const backendURL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:4578';
+
 export default function CreateLoanPage() {
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
+  const navigate = useNavigate();
+  const [patrons, setPatrons] = useState([]);
+  const [selectedPatronId, setSelectedPatronId] = useState('');
   const [books, setBooks] = useState([]);
   const [selectedBookIds, setSelectedBookIds] = useState([]);
+  const [checkoutDate, setCheckoutDate] = useState(() => new Date().toISOString().split('T')[0]);
+  const [dueDate, setDueDate] = useState('');
   const [message, setMessage] = useState('');
+
+  useEffect(() => {
+    const loadPatrons = async () => {
+      try {
+        const response = await fetch(`${backendURL}/patrons`);
+        if (!response.ok) {
+          throw new Error(`Request failed with status ${response.status}`);
+        }
+        const data = await response.json();
+        setPatrons(Array.isArray(data) ? data : []);
+      } catch (error) {
+        console.error('Error loading patrons:', error);
+        setMessage('Could not load patrons from the server.');
+      }
+    };
+
+    loadPatrons();
+  }, []);
 
   useEffect(() => {
     const loadBooks = async () => {
       try {
-        const response = await fetch(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:4578'}/books`);
+        const response = await fetch(`${backendURL}/books`);
         if (!response.ok) {
           throw new Error(`Request failed with status ${response.status}`);
         }
@@ -37,11 +61,11 @@ export default function CreateLoanPage() {
     setSelectedBookIds(selectedOptions);
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
-    if (!firstName.trim() || !lastName.trim()) {
-      setMessage('Please enter both a first and last name.');
+    if (!selectedPatronId) {
+      setMessage('Please select a patron.');
       return;
     }
 
@@ -50,30 +74,72 @@ export default function CreateLoanPage() {
       return;
     }
 
-    setMessage(`Loan request created for ${firstName.trim()} ${lastName.trim()} with ${selectedBookIds.length} selected book(s).`);
+    if (!checkoutDate || !dueDate) {
+      setMessage('Please enter both a checkout date and a due date.');
+      return;
+    }
+
+    const selectedPatron = patrons.find((patron) => patron.id_patron === selectedPatronId);
+    setMessage(`Loan request created for ${selectedPatron?.fname} ${selectedPatron?.lname} with ${selectedBookIds.length} selected book(s).`);
+
+    try {
+      const response = await fetch(`${backendURL}/loans/create`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id_patron: selectedPatronId,
+          checkout_date: checkoutDate,
+          books: selectedBookIds.map((id_book) => ({ id_book, due_date: dueDate }))
+        })
+      });
+
+      if (!response.ok) {
+        setMessage('Failed to create loan.');
+        return;
+      }
+
+      navigate('/loans');
+    } catch (error) {
+      console.error('Error creating loan:', error);
+      setMessage('An error occurred while creating the loan.');
+    }
   };
 
   return (
     <section className="card">
       <h2>Add a new Loan</h2>
-      <p>Enter the borrower’s name and choose one or more books to check out.</p>
+      <p>Select the borrower and choose one or more books to check out.</p>
 
       <form className="cuForm" onSubmit={handleSubmit}>
-        <label htmlFor="create_loan_fname">First Name:</label>
+        <label htmlFor="create_loan_patron">Patron:</label>
+        <Select
+            inputId="create_loan_patron"
+            name="patron"
+            options={patrons.map((patron) => ({
+              value: patron.id_patron,
+              label: `${patron.fname} ${patron.lname}`
+            }))}
+            value={patrons
+              .filter((patron) => patron.id_patron === selectedPatronId)
+              .map((patron) => ({ value: patron.id_patron, label: `${patron.fname} ${patron.lname}` }))[0] ?? null}
+            onChange={(selectedOption) => setSelectedPatronId(selectedOption?.value ?? '')}
+        />
+
+        <label htmlFor="create_loan_checkout_date">Checkout Date:</label>
         <input
-          type="text"
-          id="create_loan_fname"
-          value={firstName}
-          onChange={(event) => setFirstName(event.target.value)}
+          type="date"
+          id="create_loan_checkout_date"
+          value={checkoutDate}
+          onChange={(event) => setCheckoutDate(event.target.value)}
           required
         />
 
-        <label htmlFor="create_loan_lname">Last Name:</label>
+        <label htmlFor="create_loan_due_date">Due Date:</label>
         <input
-          type="text"
-          id="create_person_lname"
-          value={lastName}
-          onChange={(event) => setLastName(event.target.value)}
+          type="date"
+          id="create_loan_due_date"
+          value={dueDate}
+          onChange={(event) => setDueDate(event.target.value)}
           required
         />
 
