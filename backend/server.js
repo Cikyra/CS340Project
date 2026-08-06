@@ -157,12 +157,13 @@ app.post('/loans/create', async(req,res) => {
     
     // createLoanEvent
     try{
-        const query1 = `INSERT INTO Loans (id_patron, checkout_date) 
-                        VALUES (?, ?)`
-        const [result] = await db.query(query1, [id_patron, checkout_date]);
-        //console.log(result)
-        // save the newly created loan_id
-        const id_loan = result.insertId
+        // call sp_create_loan_event. pass @id_loan as output parameter
+        await db.query(
+            `CALL sp_create_loan_event(?, ?, @id_loan)`,
+            [id_patron, checkout_date]
+        );
+
+        const [[{id_loan}]] = await db.query(`SELECT @id_loan AS id_loan`);
 
         // create new Loan_Details row(s)
         for (const book of books) {
@@ -171,14 +172,20 @@ app.post('/loans/create', async(req,res) => {
             const due_date = book.due_date
             const date_returned = null
             
-            const query2 = `INSERT INTO Loan_Details (id_loan, id_book, due_date, date_returned)
-                            VALUES (?, ?, ?, ?)`           
-            const [result2] = await db.query(query2, [id_loan, id_book, due_date, date_returned ])}
+            await db.query(
+                `CALL sp_create_loan_event_details(?, ?, ?, ?, @id_loan_details)`,
+                [id_loan, id_book, due_date, date_returned]
+            );
+            // id_loan_details not used, but still made available
+            const [[{id_loan_details}]] = await db.query(`SELECT @id_loan_details AS id_loan`)
+        }
             
         res.status(201).send("Loans and Loan_Details successfully created")
-        }catch(error){
+
+    }catch(error){
         res.status(500).send("An error occurred while creating new Loan event and Loan_Details.")
-    }})
+        console.error(error)
+}})
 
 
 // -----------------------------------------------------------------------------------
@@ -205,13 +212,14 @@ app.put('/loandetails/:_id', async(req,res) => {
         
         // update Loan_Details
         try{
-            const query1 = `UPDATE Loan_Details
-                            SET due_date = ?, date_returned = ?
-                            WHERE id_loan_details = ?`
-            const [result] = await db.query(query1, [due_date, date_returned, id_loan_details])
+            await db.query(
+                `CALL sp_update_loan_details(?, ?, ?)`,
+                [id_loan_details, due_date, date_returned]
+            );
             res.status(200).send("Loan_Details successfully updated.")
         }catch(error){
             res.status(500).send("An error occurred while updating Loan_Details.")
+            console.error(error)
         }})
 
 
@@ -225,28 +233,49 @@ app.delete('/loandetails/:_id', async(req,res) => {
         return res.status(400).send("Improperly formatted request.")}
 
     try{
-        const query1 = `DELETE FROM Loan_Details
-                        WHERE id_loan_details = ?`
-        const [result] = await db.query(query1, [id_loan_details])
+        await db.query(
+            `CALL sp_delete_loanDetail_book(?)`,
+            [id_loan_details]
+        );
         res.status(204).send()
     }catch(error){
         res.status(500).send("An error occurred while deleting this record.")
+        console.error(error)
     }})
 
-    app.delete('/loans/:_id', async(req,res) => {
-        const id_loan = Number(req.params._id)
-        if (!Number.isInteger(id_loan)) {
-            return res.status(400).send("Improperly formatted request")}
+app.delete('/loans/:_id', async(req,res) => {
+    const id_loan = Number(req.params._id)
+    if (!Number.isInteger(id_loan)) {
+        return res.status(400).send("Improperly formatted request")}
 
-        try{
-            const query1 = `DELETE FROM Loans
-                            WHERE id_loan = ?`
-            const [rows] = await db.query(query1, [id_loan])
-            res.status(204).send()
-        }catch(error){
-            res.status(500).send("An error occurred while deleting this record.")
-        }
-    })
+    try{
+        await db.query(
+            `CALL sp_delete_loan(?)`,
+            [id_loan]
+        );
+        res.status(204).send()
+    }catch(error){
+        res.status(500).send("An error occurred while deleting this record.")
+        console.error(error)
+    }
+})
+
+// -----------------------------------------------------------------------------------
+//  RESET
+// -----------------------------------------------------------------------------------
+app.post('/reset', async(req,res) => {
+    try{
+        await db.query(
+            `CALL sp_restore_database()`,
+        );
+        res.status(200).send("Database reset successful.")
+    }catch(error){
+        res.status(500).send("An error occurred while reseting the database")
+        console.error(error)
+    }
+})
+
+
 
 
 
