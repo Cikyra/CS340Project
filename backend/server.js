@@ -1,9 +1,14 @@
-/*Citation for thew following file
-Date: 7/27/2026
-Adapted from CS340 Activity 2 starter code
-Wrote in my own route handlers
+/*Citation for the following file
+Date: 8/12/2026
+Adapted from CS340 Activity 2 starter code (server set up). Used to initialize the express server, and the express.json/cors middleware.
+Source URL: https://canvas.oregonstate.edu/courses/2051721/assignments/10565906?module_item_id=26923289
+Adapted from CS340 Module 8, "Implementing CUD Operations in your App". Used to incorporate basic try/catch route handler structure, 
+as well as the 'CALL sp ...' syntax; modified for REST API; added my own validation logic and loop structure for create loan event.
+Source URL: https://canvas.oregonstate.edu/courses/2051721/pages/exploration-implementing-cud-operations-in-your-app?module_item_id=26923368
 */
 
+
+// server set up (see Activity 2 citation) 
 const db = require('./db-connector');
 const express = require('express');
 const app = express();
@@ -13,6 +18,9 @@ const PORT = 4578;
 app.use(cors({ credentials: true, origin: "*" }));
 app.use(express.json()); // this is needed for post requests, good thing to know
 
+
+
+// route handlers (see Module 8 citation)
 
 // -----------------------------------------------------------------------------------
 //  All Get Requests
