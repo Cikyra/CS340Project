@@ -1,3 +1,8 @@
+/* Citation for the following file
+Date: 8/11/2026
+Adapted from Laura's previous final project for CS290
+*/
+
 export default function BooksRow({ book }) {
   const bookId = book?.id_book
   const title = book?.title
