@@ -67,7 +67,7 @@ This project utilized a frontend React, backend Rest framework that has very sim
 
 Several files including reactServer.cjs, CreateLoanPage.jsx, db-connector.js, and server.js were copied or adapted from the CS340 starter code. 
 
-In `server.js`: the server initialization logic (i.e., Express/CORS/JSON middleware) is adapted from CS340 Activity 2 starter code, while the basic try/catch + `CALL sp_()` route handler patterns are adapted from CS340 Module 8 exploration "Implementing CUD Operations in your App". In `PL.sql`: the stored procedure structure (i.e., the transaction handling, and parameter-existence checks) follow the CS340 Module 8 exploration. 
+In `server.js`: the server initialization logic (i.e., Express/CORS/JSON middleware) is adapted from CS340 Activity 2 starter code, while the basic try/catch + `CALL sp_()` route handler patterns are adapted from CS340 Module 8 exploration "Implementing CUD Operations in your App". In `PL.sql`: the stored procedure structure (i.e., the transaction handling, and parameter-existence checks) follow the CS340 Module 7 exploration "PL/SQL part 2, Stored Procedures for CUD" as well as the module 7 PL/SQL assignment starter code "query1.sql" through "query10.sql".
 
 One file, the EditLoanPage.jsx, was created using iterative AI prompts from both Google Gemini and Claude. 
 Detailed information on these prompts are in the in-file citation at the top.
