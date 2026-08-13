@@ -1,5 +1,5 @@
 /*Citation for the use of AI tools: Laura Riley
-  Date: 8/4/36
+  Date: 8/4/26
   Adapted from response from Gemini AI
   Source URL: gemini.google.com
   Prompt: Here is the database I am working with, 
@@ -24,24 +24,29 @@ const EditLoanPage = ({ loanToEdit }) => {
   const [idLoanDetailsUpdate, setIdLoanDetailsUpdate] = useState(_id ?? '');
   const [dueDate, setDueDate] = useState(loanToEdit?.due_date?.split('T')[0] ?? '');
   const [dateReturned, setDateReturned] = useState(loanToEdit?.date_returned?.split('T')[0] ?? '');
+  const [idBookUpdate, setIdBookUpdate] = useState(loanToEdit?.id_book ?? '');
   
+
   const [idLoanDetailsDelete, setIdLoanDetailsDelete] = useState('');
   const [idLoanDelete, setIdLoanDelete] = useState('');
 
   // Options for the dropdown lists
   const [loanDetails, setLoanDetails] = useState([]);
   const [loans, setLoans] = useState([]);
+  const [books, setBooks] = useState([]);
 
   useEffect(() => {
     const loadDropdownOptions = async () => {
       try {
-        const [loanDetailsResponse, loansResponse] = await Promise.all([
+        const [loanDetailsResponse, loansResponse, booksResponse] = await Promise.all([
           fetch(`${backendURL}/loandetails`),
-          fetch(`${backendURL}/loans`)
+          fetch(`${backendURL}/loans`),
+          fetch(`${backendURL}/books`)
         ]);
         const loanDetailsData = loanDetailsResponse.ok ? await loanDetailsResponse.json() : [];
         setLoanDetails(loanDetailsData);
         setLoans(loansResponse.ok ? await loansResponse.json() : []);
+        setBooks(booksResponse.ok ? await booksResponse.json() : []);
 
         // loanToEdit prop is lost on direct navigation/refresh, so fall back to the fetched record for this _id
         const currentLoanDetail = loanDetailsData.find(
@@ -49,6 +54,7 @@ const EditLoanPage = ({ loanToEdit }) => {
         );
         if (currentLoanDetail) {
           setIdLoanDetailsUpdate(String(currentLoanDetail.id_loan_details));
+          setIdBookUpdate(String(currentLoanDetail.id_book));
           setDueDate(currentLoanDetail.due_date?.split('T')[0] ?? '');
           setDateReturned(currentLoanDetail.date_returned?.split('T')[0] ?? '');
         }
@@ -67,11 +73,12 @@ const EditLoanPage = ({ loanToEdit }) => {
   const handleUpdateLoanDetail = async (e) => {
     e.preventDefault();
     try {
-      // Represents: UPDATE Loan_Details SET due_date = :due_date_Input, date_returned = :date_returned_Input WHERE id_loan_details = :id_loan_details_from_dropdown;
+      // Represents: UPDATE Loan_Details SET id_book = :id_book_Input, due_date = :due_date_Input, date_returned = :date_returned_Input WHERE id_loan_details = :id_loan_details_from_dropdown;
       const response = await fetch(`${backendURL}/loandetails/${idLoanDetailsUpdate}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          id_book: Number(idBookUpdate),
           due_date: dueDate,
           date_returned: dateReturned || null
         })
@@ -142,7 +149,7 @@ const EditLoanPage = ({ loanToEdit }) => {
         <h2>Update Loan Details</h2>
         <form onSubmit={handleUpdateLoanDetail}>
           <fieldset>
-            <legend>Update Due Date & Return Date</legend>
+            <legend>Update Book, Due Date, & Return Date</legend>
             <label>
               Loan Detail ID (Dropdown):
               <select
@@ -154,6 +161,22 @@ const EditLoanPage = ({ loanToEdit }) => {
                 {loanDetails.map((loanDetail) => (
                   <option key={loanDetail.id_loan_details} value={loanDetail.id_loan_details}>
                     {`ID ${loanDetail.id_loan_details} - ${loanDetail.book_title} (Loan #${loanDetail.id_loan})`}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <br />
+            <label>
+              Book (Dropdown):
+              <select
+                value={idBookUpdate}
+                onChange={(e) => setIdBookUpdate(e.target.value)}
+                required
+              >
+                <option value="" disabled>Select a book...</option>
+                {books.map((book) => (
+                  <option key={book.id_book} value={book.id_book}>
+                    {book.title}
                   </option>
                 ))}
               </select>
