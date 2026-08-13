@@ -1,3 +1,9 @@
+/* Citation for the following file
+Date: 8/11/2026
+Adapted from Laura's previous final project for CS290
+Same elements from CS340 Starter Code
+*/
+
 import { Link } from 'react-router-dom';
 
 export default function Navigation() {

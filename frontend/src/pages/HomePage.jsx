@@ -1,4 +1,7 @@
-
+/* Citation for the following file
+Date: 8/11/2026
+Adapted from Laura's previous final project for CS290
+*/
 const backendURL = import.meta.env.VITE_BACKEND_URL
 
 

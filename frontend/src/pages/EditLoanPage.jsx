@@ -8,6 +8,10 @@
   database and perform the operations listed in the file, 
   using React. Write me a file called EditLoanPage.jsx that 
   will handle user input to alter all the loan details of a specific loan
+
+  For all places on this page where the Loan Detail ID input form is, it is 
+  listed as (Dropdown), but they are not drop downs, they are incremental counters. 
+  Change these to be a true drop down list
 */
 
 
