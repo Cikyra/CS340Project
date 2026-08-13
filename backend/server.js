@@ -201,7 +201,8 @@ app.post('/loans/create', async(req,res) => {
 // -----------------------------------------------------------------------------------
 
 function validateLoanDetails(properties, id_loan_details) {
-    const {due_date, date_returned} = properties
+    const {id_book, due_date, date_returned} = properties
+    if (!Number.isInteger(id_book) || !id_book) {return false}
     if (!validateDate(due_date)) {return false}
     if (date_returned !== null && !validateDate(date_returned)) {return false}
     if (!Number.isInteger(id_loan_details)) {return false}
@@ -216,13 +217,13 @@ app.put('/loandetails/:_id', async(req,res) => {
         }
 
         const loanUpdate = req.body
-        const{due_date, date_returned} = loanUpdate
+        const{id_book, due_date, date_returned} = loanUpdate
         
         // update Loan_Details
         try{
             await db.query(
-                `CALL sp_update_loan_details(?, ?, ?)`,
-                [id_loan_details, due_date, date_returned]
+                `CALL sp_update_loan_details(?, ?, ?, ?)`,
+                [id_loan_details, id_book, due_date, date_returned]
             );
             res.status(200).send("Loan_Details successfully updated.")
         }catch(error){
